@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Rispow Finder</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-dark: #0f0f13;
+            --card-bg: #18191a;
+            --neon-cyan: #00ffcc;
+            --neon-pink: #ff00ff;
+            --fb-blue: #2D88FF;
+            --whatsapp-green: #25D366;
+            --gold: #FFD700;
+            --text-main: #ffffff;
+            --text-muted: #b0b0b0;
+            --nav-height: 60px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            overflow-x: hidden;
+            padding-bottom: calc(var(--nav-height) + 20px);
+        }
+
+        .hidden { display: none !important; }
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Header */
+        header {
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(24, 25, 26, 0.95);
+            padding: 12px 15px; display: flex; justify-content: space-between; align-items: center;
+            border-bottom: 1px solid #333;
+        }
+        .logo { font-size: 1.4rem; font-weight: 800; background: linear-gradient(45deg, var(--neon-cyan), var(--neon-pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Banner */
+        .announcement-bar {
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+            color: #000; font-size: 0.8rem; padding: 6px; text-align: center; font-weight: 700;
+            white-space: nowrap; overflow: hidden;
+        }
+        .marquee { display: inline-block; animation: marquee 15s linear infinite; }
+        @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; height: var(--nav-height);
+            background: #18191a; border-top: 1px solid #333;
+            display: flex; justify-content: space-around; align-items: center;
+            z-index: 1000; padding-bottom: 5px; overflow-x: auto;
+        }
+        .nav-item {
+            flex: 1; min-width: 50px; text-align: center; color: var(--text-muted); font-size: 1.4rem; padding: 10px 0; background: transparent; border: none;
+        }
+        .nav-item.active { color: var(--fb-blue); }
+
+        /* General */
+        .container { max-width: 600px; margin: 0 auto; padding: 10px; }
+        .glass-card { background: var(--card-bg); border: 1px solid #333; border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        input, textarea, select { width: 100%; background: #3a3b3c; border: none; padding: 12px; border-radius: 20px; color: #fff; margin-bottom: 10px; outline: none; }
+        .btn { background: var(--fb-blue); border: none; color: #fff; padding: 10px; border-radius: 8px; font-weight: 600; width: 100%; margin-top: 5px; cursor: pointer; }
+        .btn-gold { background: linear-gradient(45deg, #FFD700, #FFA500); color: black; }
+
+        /* Payment Plans */
+        .plan-option { border: 1px solid #333; padding: 15px; margin-bottom: 10px; border-radius: 10px; cursor: pointer; }
+        .plan-option.selected { border-color: var(--neon-cyan); background: rgba(0, 255, 204, 0.1); }
+        .plan-option h4 { margin: 0; color: white; display: flex; justify-content: space-between; }
+
+        /* Post Design */
+        .post-card { background: #242526; border-radius: 10px; margin-bottom: 15px; border: 1px solid #333; overflow: hidden; position: relative; }
+        .post-header { display: flex; align-items: center; padding: 12px; cursor: pointer; }
+        .user-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 10px; border: 1px solid #555; }
+        .post-img { width: 100%; max-height: 600px; object-fit: contain; background: #000; display: block; }
+        .reward-overlay {
+            position: absolute; top: 10px; right: 10px;
+            background: linear-gradient(90deg, #FFD700, #FFA500);
+            color: black; font-weight: bold; padding: 5px 12px; border-radius: 20px;
+            font-size: 0.85rem; box-shadow: 0 2px 5px rgba(0,0,0,0.5); z-index: 10;
+        }
+        .post-actions { display: flex; border-top: 1px solid #3e4042; padding: 5px 0; }
+        .action-btn { flex: 1; background: transparent; border: none; color: #b0b3b8; font-size: 0.9rem; padding: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .action-btn.liked { color: var(--fb-blue); }
+
+        /* Share Grid */
+        .share-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 15px; padding: 20px 0; text-align: center; }
+        .share-item i { font-size: 2rem; margin-bottom: 5px; display: block; }
+        .share-item p { font-size: 0.8rem; color: #ccc; margin: 0; }
+
+        /* Modals */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: flex; justify-content: center; align-items: flex-end; }
+        .modal-content { background: #242526; width: 100%; max-width: 600px; height: auto; max-height: 90vh; border-radius: 20px 20px 0 0; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+        .close-modal { position: absolute; top: 15px; right: 15px; font-size: 1.5rem; color: #ccc; cursor: pointer; }
+
+        /* Messages */
+        .msg-bubble { padding: 8px 12px; border-radius: 18px; max-width: 75%; margin-bottom: 5px; font-size: 0.9rem; word-wrap: break-word; }
+        .msg-own { align-self: flex-end; background: var(--fb-blue); color: white; }
+        .msg-other { align-self: flex-start; background: #3a3b3c; color: white; }
+
+    </style>
+</head>
+<body>
+
+    <div class="announcement-bar">
+        <div class="marquee">This app for your find lost post just post and find • App Owned by Aslam Orakzai • FastPay Integrated</div>
+    </div>
+
+    <header>
+        <div class="logo">Rispow Finder</div>
+        <i class="fas fa-bolt" style="color:var(--neon-cyan);"></i>
+    </header>
+
+    <main id="app-root" class="container">
+
+        <!-- 1. FEED (Updated Search & Filter) -->
+        <section id="view-feed" class="fade-in">
+            <!-- Search & Date Filter -->
+            <div class="glass-card" style="display:flex; gap:10px; align-items:center;">
+                <div style="flex:1; background:#3a3b3c; border-radius:20px; padding:0 10px; display:flex; align-items:center;">
+                    <i class="fas fa-search" style="color:#aaa;"></i>
+                    <input type="text" id="feed-search" placeholder="Search posts..." style="border:none; background:transparent; margin:0;">
+                </div>
+                <div style="position:relative; width:40px; height:40px; background:#3a3b3c; border-radius:50%; display:flex; align-items:center; justify-content:center;">
+                    <i class="fas fa-calendar-alt" style="color:var(--neon-cyan); font-size:1.2rem;"></i>
+                    <input type="date" id="filter-date" style="position:absolute; top:0; left:0; width:100%; height:100%; opacity:0; cursor:pointer;">
+                </div>
+            </div>
+
+            <div class="glass-card" style="display:flex; align-items:center; gap:10px;" onclick="switchTab('publish')">
+                <img id="feed-my-avatar" src="https://ui-avatars.com/api/?name=User" class="user-avatar">
+                <div style="background:#3a3b3c; padding:10px; border-radius:20px; flex:1; color:#b0b0b0;">What's on your mind?</div>
+                <i class="fas fa-images" style="color:var(--neon-cyan); font-size:1.2rem;"></i>
+            </div>
+
+            <div id="feed-container"><div style="text-align:center; padding:20px; color:gray;">Loading Feed...</div></div>
+        </section>
+
+        <!-- 2. PUBLISH -->
+        <section id="view-publish" class="hidden fade-in">
+            <div class="glass-card">
+                <h3 style="color:white;">Create Post</h3>
+                
+                <div id="lock-message" class="hidden" style="text-align:center; padding:20px; border:1px solid red; border-radius:10px; color:#ff4d4d; margin-bottom:15px;">
+                    <i class="fas fa-lock" style="font-size:2rem;"></i>
+                    <p>Subscription Required to Post</p>
+                    <button onclick="switchTab('payment')" class="btn btn-gold">Unlock Now</button>
+                </div>
+
+                <form id="publish-form">
+                    <input type="text" id="pub-title" placeholder="Title" required>
+                    <select id="pub-category">
+                        <option value="other">Category: Other</option><option value="human">Missing Person</option><option value="pet">Pet</option><option value="car">Vehicle</option>
+                    </select>
+                    <select id="pub-province" required>
+                        <option value="">Select Province</option><option value="Punjab">Punjab</option><option value="Sindh">Sindh</option><option value="KPK">KPK</option><option value="Balochistan">Balochistan</option><option value="Kashmir">Kashmir</option><option value="Gilgit">Gilgit</option>
+                    </select>
+                    <input type="text" id="pub-city" placeholder="City" required>
+                    <input type="tel" id="pub-phone" placeholder="Contact Phone" required>
+                    <input type="text" id="pub-reward" placeholder="Reward Amount (e.g. 5000 PKR)">
+                    <textarea id="pub-desc" rows="3" placeholder="Description..." required></textarea>
+                    
+                    <label style="display:block; background:#2d3436; padding:10px; border-radius:10px; text-align:center; cursor:pointer; border:1px dashed #555;">
+                        <i class="fas fa-camera"></i> Select Photo
+                        <input type="file" id="pub-file" accept="image/*" style="display:none;" required>
+                    </label>
+                    <img id="pub-preview-img" style="display:none; width:100%; margin-top:10px; border-radius:10px;">
+
+                    <button type="submit" class="btn">Publish Post</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 3. MESSENGER -->
+        <section id="view-messenger" class="hidden fade-in">
+            <div id="messenger-inbox">
+                <div class="glass-card">
+                    <h4 style="color:white;">Start Chat</h4>
+                    <div style="display:flex; gap:5px; margin-top:10px;">
+                        <input type="text" id="chat-search-id" placeholder="Paste User ID here..." style="margin:0;">
+                        <button onclick="startDirectChat()" class="btn" style="width:auto; margin:0; padding:0 15px;">Chat</button>
+                    </div>
+                </div>
+                <div class="glass-card" onclick="openChat(null, 'Public Community')">
+                    <h4 style="color:var(--neon-cyan);">Public Community Chat</h4>
+                </div>
+            </div>
+            <div id="messenger-chat-view" style="display:none; height:100%;">
+                <div class="glass-card" style="margin-bottom:0; display:flex; align-items:center; padding:10px;">
+                    <i class="fas fa-arrow-left" onclick="closeChat()" style="margin-right:10px; font-size:1.2rem;"></i>
+                    <h4 id="chat-recipient-name" style="color:white; margin:0;">User</h4>
+                </div>
+                <div id="msg-container" style="height:calc(100vh - 230px); overflow-y:auto; padding-top:10px;"></div>
+                <div style="position:fixed; bottom:calc(var(--nav-height) + 5px); left:0; width:100%; padding:10px; background:#242526; display:flex; gap:10px;">
+                    <input type="text" id="msg-input" placeholder="Type message..." style="margin:0; background:#3a3b3c;">
+                    <button id="msg-send-btn" style="width:40px; background:var(--fb-blue); border:none; border-radius:50%; color:white;"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. PAYMENT -->
+        <section id="view-payment" class="hidden fade-in">
+            <div class="glass-card">
+                <h2 style="color:var(--gold); text-align:center;">Select Plan</h2>
+                
+                <div class="plan-option" onclick="selectPlan(this, 50)">
+                    <h4>1 Day <span>50 PKR</span></h4>
+                    <small>1 Post Allowed</small>
+                </div>
+                <div class="plan-option" onclick="selectPlan(this, 300)">
+                    <h4>Weekly <span>300 PKR</span></h4>
+                    <small>10 Posts Allowed</small>
+                </div>
+                <div class="plan-option" onclick="selectPlan(this, 600)">
+                    <h4>Monthly <span>600 PKR</span></h4>
+                    <small>20 Posts Allowed</small>
+                </div>
+
+                <button onclick="processDemoPayment()" class="btn btn-gold">Pay with FastPay (Demo)</button>
+            </div>
+        </section>
+
+        <!-- 5. PROFILE -->
+        <section id="view-profile" class="hidden fade-in">
+            <div id="auth-container" class="glass-card" style="text-align:center;">
+                <h2>Rispow Finder</h2>
+                <form id="auth-form">
+                    <input type="email" id="auth-email" placeholder="Email" required>
+                    <input type="password" id="auth-pass" placeholder="Password" required>
+                    <input type="text" id="auth-name" placeholder="Name" class="hidden">
+                    <button type="submit" class="btn">Login</button>
+                </form>
+                <p id="toggle-auth" style="margin-top:10px; color:var(--fb-blue);">Create Account</p>
+            </div>
+            <div id="user-menu" class="hidden">
+                <div class="glass-card" style="text-align:center;">
+                    <img id="menu-avatar" src="" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--neon-cyan);">
+                    <h3 id="menu-name">User</h3>
+                    <div style="background:#2d3436; padding:5px; margin:10px auto; display:inline-block; border-radius:5px;">
+                        ID: <span id="my-unique-id" style="color:var(--neon-cyan);">...</span> <i class="fas fa-copy" onclick="copyMyID()"></i>
+                    </div>
+                    <p id="menu-email" style="color:gray;"></p>
+                    <div style="display:flex; justify-content:center; gap:15px; margin:15px 0;">
+                        <a id="link-fb" href="#" target="_blank"><i class="fab fa-facebook" style="font-size:1.5rem; color:#1877F2"></i></a>
+                        <a id="link-wa" href="#" target="_blank"><i class="fab fa-whatsapp" style="font-size:1.5rem; color:#25D366"></i></a>
+                        <a id="link-tk" href="#" target="_blank"><i class="fab fa-tiktok" style="font-size:1.5rem; color:#ff0050"></i></a>
+                        <a id="link-web" href="#" target="_blank"><i class="fas fa-globe" style="font-size:1.5rem; color:var(--fb-blue)"></i></a>
+                    </div>
+                    <button onclick="document.getElementById('modal-edit-profile').classList.remove('hidden')" class="btn btn-secondary">Edit Profile</button>
+                </div>
+                <div class="glass-card">
+                    <button id="btn-logout" class="btn btn-secondary" style="color:#ff4d4d;">Logout</button>
+                    <div style="text-align:center; font-size:0.8rem; color:gray; margin-top:20px;">App owned by Aslam Orakzai</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('feed')"><i class="fas fa-home"></i></button>
+        <button class="nav-item" onclick="switchTab('publish')"><i class="fas fa-plus-circle" style="font-size:1.8rem; color:var(--fb-blue);"></i></button>
+        <button class="nav-item" onclick="switchTab('messenger')"><i class="fas fa-comment-dots"></i></button>
+        <button class="nav-item" onclick="switchTab('payment')"><i class="fas fa-wallet" style="color:var(--gold);"></i></button>
+        <button class="nav-item" onclick="switchTab('profile')"><i class="fas fa-user"></i></button>
+    </nav>
+
+    <!-- Social Share Modal -->
+    <div id="modal-share" class="modal-overlay hidden" style="align-items:flex-end;">
+        <div class="modal-content" style="height:auto; border-radius:20px 20px 0 0;">
+            <h3 style="text-align:center; margin-bottom:20px;">Share to...</h3>
+            <div class="share-grid">
+                <div class="share-item" onclick="shareTo('wa')"><i class="fab fa-whatsapp" style="color:#25D366;"></i><p>WhatsApp</p></div>
+                <div class="share-item" onclick="shareTo('fb')"><i class="fab fa-facebook" style="color:#1877F2;"></i><p>Facebook</p></div>
+                <div class="share-item" onclick="shareTo('tw')"><i class="fab fa-twitter" style="color:#1DA1F2;"></i><p>Twitter</p></div>
+                <div class="share-item" onclick="shareTo('cp')"><i class="fas fa-link" style="color:#aaa;"></i><p>Copy Link</p></div>
+            </div>
+            <button onclick="closeModal('modal-share')" class="btn btn-secondary">Cancel</button>
+        </div>
+    </div>
+
+    <!-- Profile Modals (Same as before) -->
+    <div id="modal-public-profile" class="modal-overlay hidden">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-public-profile')">&times;</span>
+            <div style="text-align:center; margin-top:20px;">
+                <img id="pp-img" src="" style="width:100px; height:100px; border-radius:50%; border:3px solid var(--neon-cyan);">
+                <h2 id="pp-name" style="color:white; margin-top:10px;">User</h2>
+                <div style="background:#333; padding:5px; display:inline-block; margin-top:5px; border-radius:5px;">ID: <span id="pp-id" style="color:var(--neon-cyan);">...</span></div>
+                <div style="display:flex; justify-content:center; gap:20px; margin-top:20px;">
+                    <a id="pp-wa" href="#" class="btn btn-whatsapp" style="width:auto;"><i class="fab fa-whatsapp"></i> Chat</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-edit-profile" class="modal-overlay hidden">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeModal('modal-edit-profile')">&times;</span>
+            <h3>Edit Profile</h3>
+            <input type="file" id="edit-file" style="margin-bottom:10px;">
+            <form id="edit-profile-form">
+                <input type="text" id="edit-name" placeholder="Name">
+                <input type="url" id="edit-fb" placeholder="Facebook Link">
+                <input type="tel" id="edit-wa" placeholder="WhatsApp Number">
+                <input type="url" id="edit-tk" placeholder="TikTok Link">
+                <input type="url" id="edit-web" placeholder="Website Link">
+                <button type="submit" class="btn">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="modal-comments" class="modal-overlay hidden">
+        <div class="modal-content" style="height:60vh;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;"><h3>Comments</h3><span class="close-modal" onclick="closeModal('modal-comments')">&times;</span></div>
+            <div id="comments-list" style="flex:1; overflow-y:auto;"></div>
+            <form id="comment-form" style="display:flex; gap:10px; margin-top:10px;"><input type="hidden" id="current-post-id"><input type="text" id="comment-input" placeholder="Write a comment..." style="margin:0;"><button type="submit" class="btn" style="width:auto; margin:0;"><i class="fas fa-paper-plane"></i></button></form>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, push, onValue, set, update, remove, serverTimestamp, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        
+        const firebaseConfig = {
+            apiKey: "AIzaSyD4QsPUUHEv3e-mLu2PoK7j-gfht3I3baA",
+            authDomain: "aslam-orakzai.firebaseapp.com",
+            databaseURL: "https://aslam-orakzai-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "aslam-orakzai",
+            storageBucket: "aslam-orakzai.firebasestorage.app",
+            messagingSenderId: "552972142138",
+            appId: "1:552972142138:web:7a14e5328229c800e99703"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        let currentUser = null;
+        let postsData = [];
+        let tempImage = ""; 
+        let tempProfileImage = ""; 
+        let currentChat = null;
+        let isPremium = false;
+        let selectedPlanAmount = 0;
+        let shareUrl = "";
+
+        const safeVal = (id) => { const el = document.getElementById(id); return el ? el.value : ""; };
+        const compress = (file) => new Promise((resolve) => {
+            const r = new FileReader(); r.readAsDataURL(file);
+            r.onload = (e) => {
+                const i = new Image(); i.src = e.target.result;
+                i.onload = () => {
+                    const c = document.createElement('canvas');
+                    const ctx = c.getContext('2d');
+                    c.width = 600; c.height = i.height * (600/i.width);
+                    ctx.drawImage(i, 0, 0, c.width, c.height);
+                    resolve(c.toDataURL('image/jpeg', 0.7));
+                }
+            }
+        });
+
+        window.switchTab = (t) => {
+            ['feed', 'publish', 'messenger', 'payment', 'profile'].forEach(id => document.getElementById('view-'+id).classList.add('hidden'));
+            document.getElementById('view-'+t).classList.remove('hidden');
+            if(t==='feed') renderPosts();
+        };
+        window.closeModal = (id) => document.getElementById(id).classList.add('hidden');
+        window.copyMyID = () => { navigator.clipboard.writeText(currentUser.uid); alert("ID Copied!"); };
+
+        // AUTH
+        onAuthStateChanged(auth, (u) => {
+            currentUser = u;
+            if(u) {
+                document.getElementById('auth-container').classList.add('hidden');
+                document.getElementById('user-menu').classList.remove('hidden');
+                loadProfile(u.uid);
+            } else {
+                document.getElementById('auth-container').classList.remove('hidden');
+                document.getElementById('user-menu').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault(); const em = safeVal('auth-email'); const pw = safeVal('auth-pass');
+            try {
+                if(!document.getElementById('auth-name').classList.contains('hidden')) {
+                    const c = await createUserWithEmailAndPassword(auth, em, pw);
+                    await updateProfile(c.user, {displayName: safeVal('auth-name')});
+                    await set(ref(db, 'users/'+c.user.uid), {name:safeVal('auth-name'), email:em, uid:c.user.uid, isPremium: false});
+                } else { await signInWithEmailAndPassword(auth, em, pw); }
+            } catch(err) { alert(err.message); }
+        });
+        document.getElementById('toggle-auth').addEventListener('click', () => { document.getElementById('auth-name').classList.toggle('hidden'); document.querySelector('#auth-form button').innerText = "Sign Up/Login"; });
+        document.getElementById('btn-logout').addEventListener('click', () => signOut(auth));
+
+        function loadProfile(uid) {
+            onValue(ref(db, 'users/'+uid), (s) => {
+                const d = s.val();
+                if(d) {
+                    isPremium = d.isPremium || false;
+                    document.getElementById('menu-name').innerText = d.name;
+                    document.getElementById('my-unique-id').innerText = d.uid;
+                    document.getElementById('menu-email').innerText = d.email;
+                    document.getElementById('menu-avatar').src = d.photo || "https://ui-avatars.com/api/?name="+d.name;
+                    const setLink = (id, url, prefix) => { const el = document.getElementById(id); if(url){ el.href = prefix ? prefix+url : url; el.style.display='inline'; } else el.style.display='none'; };
+                    setLink('link-fb', d.facebook); setLink('link-wa', d.whatsapp, 'https://wa.me/'); setLink('link-tk', d.tiktok); setLink('link-web', d.website);
+                }
+            });
+        }
+
+        document.getElementById('edit-file').addEventListener('change', async (e) => { if(e.target.files[0]) { tempProfileImage = await compress(e.target.files[0]); document.getElementById('edit-preview').src = tempProfileImage; } });
+        document.getElementById('edit-profile-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await update(ref(db, 'users/'+currentUser.uid), {
+                name: safeVal('edit-name'), facebook: safeVal('edit-fb'), whatsapp: safeVal('edit-wa'), tiktok: safeVal('edit-tk'), website: safeVal('edit-web'), photo: tempProfileImage || document.getElementById('menu-avatar').src
+            });
+            document.getElementById('modal-edit-profile').classList.add('hidden');
+        });
+
+        window.selectPlan = (el, amount) => { document.querySelectorAll('.plan-option').forEach(e => e.classList.remove('selected')); el.classList.add('selected'); selectedPlanAmount = amount; };
+        window.processDemoPayment = () => {
+            if(!selectedPlanAmount) return alert("Select a plan");
+            if(confirm(`Pay ${selectedPlanAmount} PKR?`)) { update(ref(db, 'users/'+currentUser.uid), {isPremium: true}).then(() => { alert("Paid!"); switchTab('publish'); }); }
+        };
+
+        document.getElementById('pub-file').addEventListener('change', async (e) => { if(e.target.files[0]) { tempImage = await compress(e.target.files[0]); document.getElementById('pub-preview-img').src = tempImage; document.getElementById('pub-preview-img').style.display = 'block'; } });
+        document.getElementById('publish-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if(!currentUser) return alert("Login first!");
+            if(!isPremium) { document.getElementById('lock-message').classList.remove('hidden'); document.getElementById('publish-form').classList.add('hidden'); return; }
+            if(!tempImage) return alert("Photo required!");
+            
+            let myPhoto = "https://ui-avatars.com/api/?name=User";
+            try { const s = await get(ref(db, 'users/'+currentUser.uid)); if(s.val().photo) myPhoto = s.val().photo; } catch(e){}
+
+            await push(ref(db, 'posts'), {
+                title: safeVal('pub-title'), cat: safeVal('pub-category'), city: safeVal('pub-city'), phone: safeVal('pub-phone'), reward: safeVal('pub-reward'), desc: safeVal('pub-desc'), image: tempImage, uid: currentUser.uid, author: currentUser.displayName, authorPic: myPhoto, ts: serverTimestamp()
+            });
+            alert("Posted!"); e.target.reset(); document.getElementById('pub-preview-img').style.display = 'none'; tempImage = ""; switchTab('feed');
+        });
+
+        onValue(ref(db, 'posts'), (s) => { const d = s.val(); postsData = []; if(d) { Object.keys(d).forEach(k => postsData.push({...d[k], id:k})); postsData.reverse(); } renderPosts(); });
+
+        function renderPosts() {
+            const c = document.getElementById('feed-container'); const search = safeVal('feed-search').toLowerCase(); const dateFilter = safeVal('filter-date');
+            c.innerHTML = postsData.filter(p => {
+                const tm = (p.title+p.desc).toLowerCase().includes(search);
+                const dm = dateFilter ? new Date(p.ts).toISOString().split('T')[0] === dateFilter : true;
+                return tm && dm;
+            }).map(p => {
+                const likes = p.likes ? Object.keys(p.likes).length : 0; const isLiked = p.likes && currentUser && p.likes[currentUser.uid] ? 'liked' : '';
+                return `
+                <div class="post-card">
+                    <div class="post-header" onclick="showPublicProfile('${p.uid}')">
+                        <img src="${p.authorPic || 'https://ui-avatars.com/api/?name='+p.author}" class="user-avatar">
+                        <div><h4>${p.author}</h4><span class="time-ago">${p.city}</span></div>
+                    </div>
+                    <div class="post-text"><h4 style="color:var(--neon-cyan);">${p.title}</h4><p>${p.desc}</p></div>
+                    <img src="${p.image}" class="post-img">
+                    ${p.reward ? `<div class="reward-overlay"><i class="fas fa-trophy"></i> Reward: ${p.reward}</div>` : ''}
+                    <div class="post-actions">
+                        <button class="action-btn ${isLiked}" onclick="toggleLike('${p.id}')"><i class="fas fa-thumbs-up"></i> Like (${likes})</button>
+                        <button class="action-btn" onclick="openComments('${p.id}')"><i class="fas fa-comment"></i> Comment</button>
+                        <button class="action-btn" onclick="openShare('${p.title}')"><i class="fas fa-share"></i> Share</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        document.getElementById('feed-search').addEventListener('input', renderPosts);
+        document.getElementById('filter-date').addEventListener('change', renderPosts);
+
+        window.showPublicProfile = (uid) => {
+            onValue(ref(db, 'users/'+uid), (s) => {
+                const d = s.val();
+                if(d) {
+                    document.getElementById('pp-name').innerText = d.name;
+                    document.getElementById('pp-img').src = d.photo || "https://ui-avatars.com/api/?name="+d.name;
+                    document.getElementById('pp-id').innerText = d.uid;
+                    if(d.whatsapp) { document.getElementById('pp-wa').href = `https://wa.me/${d.whatsapp}`; document.getElementById('pp-wa').style.display='inline-block'; } 
+                    document.getElementById('modal-public-profile').classList.remove('hidden');
+                }
+            });
+        };
+
+        window.toggleLike = (pid) => { if(!currentUser) return; const r = ref(db, `posts/${pid}/likes/${currentUser.uid}`); const p = postsData.find(x => x.id === pid); if(p.likes && p.likes[currentUser.uid]) remove(r); else set(r, true); };
+        window.openComments = (pid) => { document.getElementById('modal-comments').classList.remove('hidden'); document.getElementById('current-post-id').value = pid; const l = document.getElementById('comments-list'); l.innerHTML = "Loading..."; onValue(ref(db, `posts/${pid}/comments`), (s) => { l.innerHTML = ""; const d = s.val(); if(d) Object.values(d).forEach(c => l.innerHTML += `<div style="margin:10px;"><strong style="color:var(--neon-cyan)">${c.author}</strong>: ${c.text}</div>`); else l.innerHTML = "<p style='text-align:center; color:gray;'>No comments.</p>"; }); };
+        document.getElementById('comment-form').addEventListener('submit', (e) => { e.preventDefault(); const txt = safeVal('comment-input'); const pid = safeVal('current-post-id'); if(txt && currentUser) { push(ref(db, `posts/${pid}/comments`), {text:txt, author:currentUser.displayName}); document.getElementById('comment-input').value = ""; } });
+
+        // SHARE
+        window.openShare = (title) => { shareUrl = window.location.href; document.getElementById('modal-share').classList.remove('hidden'); };
+        window.shareTo = (p) => {
+            const u = encodeURIComponent(shareUrl);
+            if(p==='wa') window.open(`https://wa.me/?text=${u}`, '_blank');
+            if(p==='fb') window.open(`https://www.facebook.com/sharer/sharer.php?u=${u}`, '_blank');
+            if(p==='tw') window.open(`https://twitter.com/intent/tweet?url=${u}`, '_blank');
+            if(p==='cp') { navigator.clipboard.writeText(shareUrl); alert("Copied!"); }
+            document.getElementById('modal-share').classList.add('hidden');
+        };
+
+        window.startDirectChat = () => { const id = safeVal('chat-search-id').trim(); if(id) openChat(id, "User "+id.substr(0,5)); };
+        window.openChat = (uid, name) => { currentChat = uid; document.getElementById('messenger-inbox').style.display = 'none'; document.getElementById('messenger-chat-view').style.display = 'block'; document.getElementById('chat-recipient-name').innerText = name; loadMessages(); };
+        window.closeChat = () => { currentChat = null; document.getElementById('messenger-inbox').style.display = 'block'; document.getElementById('messenger-chat-view').style.display = 'none'; };
+        function loadMessages() { const room = currentChat ? (currentChat < currentUser.uid ? currentChat+'_'+currentUser.uid : currentUser.uid+'_'+currentChat) : 'public'; onValue(ref(db, room==='public'?'messages':'private_msgs/'+room), (s) => { const b = document.getElementById('msg-container'); b.innerHTML = ""; const d = s.val(); if(d) Object.values(d).slice(-30).forEach(m => { b.innerHTML += `<div class="msg-bubble ${m.uid===currentUser.uid?'msg-own':'msg-other'}">${m.text}</div>`; }); }); }
+        document.getElementById('msg-send-btn').addEventListener('click', () => { const t = safeVal('msg-input'); if(t && currentUser) { const room = currentChat ? (currentChat < currentUser.uid ? currentChat+'_'+currentUser.uid : currentUser.uid+'_'+currentChat) : 'public'; push(ref(db, room==='public'?'messages':'private_msgs/'+room), {text: t, uid: currentUser.uid, ts: serverTimestamp()}); document.getElementById('msg-input').value = ""; } });
+    </script>
+</body>
+</html>
